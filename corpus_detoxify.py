@@ -18,6 +18,7 @@ import json
 from typing import List,Tuple,Dict
 import random
 from pprint import pprint as ppp
+import time
 # import pickle
 # import os
 # from os.path import join, exists
@@ -45,6 +46,7 @@ from flet import (
     icons,
     FilePicker,
     FilePickerResultEvent,
+    ProgressRing
 )
 
 
@@ -72,7 +74,7 @@ class CorpusDetoxifyUI(UserControl):
                                           text="DOWNLOAD",
                                             on_click=self.run_download)
         self.dlg = flet.AlertDialog(
-        title=Text("Download DONE!"),
+        title=Text("BEGIN DOWNLOADING..."),
             on_dismiss=lambda e: print("Dialog dismissed!"))
 
         self.clear_bttn=ElevatedButton(icon=icons.RESET_TV,text="CLEAR",
@@ -83,7 +85,7 @@ class CorpusDetoxifyUI(UserControl):
         return Column(
             # width=400,
             controls=[
-                Row([Text(value="上传您的对话语料，我们来帮您清理。",
+                Row([Text(value="Update your dialogue corpus...",
                           size=30,
                           text_align=flet.TextAlign.CENTER)],
                     vertical_alignment="center"),
@@ -111,16 +113,26 @@ class CorpusDetoxifyUI(UserControl):
     def run_detect(self,e):
         self.detect_res="virtual res for detection."
         print("RUN DETECT")
+        waiting_time=5
+        self.detect_stat.controls=[ProgressRing()]
+        for i in range(waiting_time):
+            time.sleep(1)
+            self.update()
         self.detect_stat.controls=[Text("✔")]
         self.update()
 
     def run_heal(self,e):
         print("RUN HEAL")
+        waiting_time=10
+        self.heal_stat.controls=[ProgressRing()]
+        for i in range(waiting_time):
+            time.sleep(1)
+            self.update()
         self.heal_stat.controls=[Text("✔")]
         self.update()
 
     def run_download(self,e):
-        print("RUN DOWNLOAD")
+        print("BEGIN DOWNLOADING")
         self.detect_stat.controls=[]
         self.heal_stat.controls=[]
         self.dlg.open=True

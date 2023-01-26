@@ -64,7 +64,7 @@ from safety_detect_healing import SafetyHealUI
 from corpus_detoxify import CorpusDetoxifyUI
 
 def main(page:Page):
-    page.title = "对话检测与修复服务效果展示"
+    page.title = "Dialogue Detection And Healing Services"
     page.horizontal_alignment = "center"
     page.scroll = "adaptive"
     page.update()

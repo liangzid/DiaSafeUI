@@ -99,6 +99,7 @@ class OneUtterance(UserControl):
 class DialogueFlow(UserControl):
     def __init__(self):
         super().__init__()
+        self.time_ls=[]
 
     def build(self):
         self.dialogue_flow=Column(controls=[])
@@ -123,18 +124,22 @@ class DialogueFlow(UserControl):
         print(f"Sended utterance: {sended_utterance}")
 
         # then just add it to the dialogue flow 
+        current_time=arrow.utcnow()
+        self.time_ls.append(current_time)
         self.dialogue_flow.controls.append(\
                                 OneUtterance(text=sended_utterance,
-                                time=arrow.utcnow().humanize(),
+                                time=current_time,
                                 is_me=False))
         self.inp_fields.value=""
         self.update()
 
         response=self.get_response(sended_utterance)
         # then just add it to the dialogue flow 
+        current_time=arrow.utcnow()
+        self.time_ls.append(current_time)
         self.dialogue_flow.controls.append(\
                                 OneUtterance(text=response,
-                                time=arrow.utcnow().humanize(),
+                                time=current_time,
                                 is_me=True))
         self.update()
     def get_response(self,utterance):
