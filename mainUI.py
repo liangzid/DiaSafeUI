@@ -108,7 +108,7 @@ def main(page:Page):
 
 ## running entry
 if __name__=="__main__":
-    flet.app(target=main)
+    flet.app(target=main,port=3933,)
     print("EVERYTHING DONE.")
 
 
