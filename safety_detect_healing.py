@@ -19,6 +19,8 @@ from typing import List,Tuple,Dict
 import random
 from pprint import pprint as ppp
 import time
+import requests
+from threading import Thread
 # import pickle
 # import os
 # from os.path import join, exists
@@ -63,6 +65,7 @@ class SafetyHealUI(UserControl):
 
 
     def build(self):
+        self.allow_run_waiting=0
         self.context_ui=TextField(hint_text="Dialogue Context (Optional)",
                                   on_submit=self.run_detect,expand=False)
         self.resp_ui=TextField(hint_text="Your Utterance to Detect",
@@ -75,7 +78,9 @@ class SafetyHealUI(UserControl):
 
         self.display=Column(spacing=25,controls=[],
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER)
-
+        self.error_dialog = flet.AlertDialog(
+                    title=Text("INVALID INPUTS!"),
+                        on_dismiss=lambda e: print("Dialog dismissed!"))
         return Column(
             # width=400,
             controls=[
@@ -91,79 +96,128 @@ class SafetyHealUI(UserControl):
                                vertical_alignment="center",
                                controls=[
                                    self.detect_bttn,self.heal_bttn
-                               ])
-                       ]),
+                               ]),
+                            ]),
+                self.error_dialog,
                 self.display
             ]
         )
     def run_detect(self,e):
-        res_dict={"Conclusion":{"Safe?":"Safe",
-                                "Type":"Offending User",},
-                "Distribution":{"Offending User":0.13,
-                                "Risk Ignorance":0.15,
-                                "Unauthorized Expertise":0.45,
-                                "Toxicity Agreement":0.24,
-                                "Biased Opinion":0.71,
-                                "Sensitive Topic Continuation":0.002,
-                                },
-                }
-        self.mode="DEBUG"
+        self.res_dict=None
+        # self.mode="DEBUG"
         self.mode="TEST"
         self.detect_res="virtual res for detection."
         print("RUN DETECT")
         if self.mode=="DEBUG":
-            self.display.controls=[
-                    Column([Text(value="------------"),
-                        Text(value=self.context_ui.value),
-                        Text(value=self.resp_ui.value),
-                        ]),
-                    Row([Text(value="Detection Results:"),
-                        Text(value=self.detect_res)]),
-                ]
-            self.update()
-        else:
-            waiting_time=5
-            self.display.controls=[Text(value="DETECTING..."),
-                                   ProgressBar()]
-            for i in range(waiting_time):
-                time.sleep(1)
+            url="http://localhost:8000/"
+            url+=f"detection/context_{self.context_ui.value}"+\
+                f"utterance_{self.resp_ui.value}"
+            t=Thread(target=self.wait,args=("DETECTING...",))
+            self.allow_run_waiting=1
+            t.start()
+            signal=requests.get(url).status_code
+            if signal!=200:
+                self.allow_run_waiting=0
+                self.error_dialog.open=True
+                self.display.controls=[]
                 self.update()
+                return -1
+            self.res_dict=requests.get(url).text
+            self.res_dict=json.loads(self.res_dict)
+            print(self.res_dict)
+        else:
+            url="http://localhost:8000/"
+            url+=f"detection/context_{self.context_ui.value}"+\
+                f"utterance_{self.resp_ui.value}"
+            t=Thread(target=self.wait,args=("DETECTING...",))
+            self.allow_run_waiting=1
+            t.start()
+            signal=requests.get(url).status_code
+            if signal!=200:
+                self.allow_run_waiting=0
+                self.error_dialog.open=True
+                self.display.controls=[]
+                self.update()
+                return -1
+            self.res_dict=requests.get(url).text
+            self.res_dict=json.loads(self.res_dict)
+            print(self.res_dict)
 
-            xls=[x for x,_ in res_dict["Distribution"].items()]
-            yls=[y for _,y in res_dict["Distribution"].items()]
+        xls=[x for x,_ in self.res_dict["Distribution"].items()]
+        yls=[y for _,y in self.res_dict["Distribution"].items()]
 
-            fig=px.bar(x=xls,y=yls,orientation="v",
-                       height=300)
+        fig=px.bar(x=xls,y=yls,orientation="v",
+                    height=300)
 
-            self.display.controls=[
-                PlotlyChart(fig,
-                            # expand=True
-                            ),
-                    Row([Text(value="Detection Results："),
-                         Text(value=f"Safety: {res_dict['Conclusion']['Safe?']}"),
-                         Text(value=f"Unsafe Type: {res_dict['Conclusion']['Type']}"),
-                         ]),
-                ]
-            self.update()
+        self.display.controls=[
+            PlotlyChart(fig,
+                        # expand=True
+                        ),
+                Column([Text(value="Detection Results：",size=30,),
+                        Row([Text(value=f"Safety:",
+                                  size=28,),
+                             Text(value=f"{self.res_dict['Conclusion']['Safe?']}",
+                                  size=30,italic=True,),
+                             ]),
+                        Row([Text(value=f"Unsafe Type:",
+                                  size=25,),
+                             Text(value=f"{self.res_dict['Conclusion']['Type']}",
+                                  size=25,italic=True,),
+                             ])
+                        ]),
+            ]
+        self.allow_run_waiting=0
+        self.update()
+        self.res_dict=None
+
+    def wait(self,label="DETECTING..."):
+        while self.res_dict is None:
+            if self.allow_run_waiting==1:
+                # print("now go to a new circle.")
+                self.display.controls=[Text(value=label),
+                                    ProgressBar()]
+                time.sleep(0.8)
+                self.update()
+            else:
+                # print("now break")
+                self.update()
+                break
 
     def run_heal(self,e):
         waiting_time=5
-        self.heal_res="virtual res for healing."
+        self.heal_res="None"
+        self.res_dict=None
 
         self.display.controls=[Text(value="HEALING..."),
                                 ProgressBar()]
-        for i in range(waiting_time):
-            time.sleep(1)
+
+        # for i in range(waiting_time):
+        #     time.sleep(1)
+        #     self.update()
+
+        url="http://localhost:8000/"
+        url+=f"healing/context_{self.context_ui.value}"+\
+            f"utterance_{self.resp_ui.value}"
+        t=Thread(target=self.wait,args=("HEALING...",))
+        self.allow_run_waiting=1
+        t.start()
+        signal=requests.get(url).status_code
+        if signal!=200:
+            self.allow_run_waiting=0
+            self.error_dialog.open=True
+            self.display.controls=[]
             self.update()
+            return -1
+        self.res_dict=requests.get(url).text
+        self.res_dict=json.loads(self.res_dict)
+        print(self.res_dict)
+        self.heal_res=self.res_dict["newresponse"]
 
         self.display.controls=[
-                Column([Text(value="------------"),
-                    Text(value=self.context_ui.value),
-                    Text(value=self.resp_ui.value),
-                    ]),
-                Row([Text(value="Healing Results:"),
-                    Text(value=self.heal_res)]),
+                Row([Text(value="Healing Results:",size=28,),
+                    Text(value=self.heal_res,size=25,italic=True)]),
             ]
+        self.allow_run_waiting=0
         self.update()
 
 def main(page: Page):
