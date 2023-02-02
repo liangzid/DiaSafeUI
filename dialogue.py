@@ -10,7 +10,6 @@ Example of Dialogue UI.
 ======================================================================
 """
 
-
 # ------------------------ Code --------------------------------------
 
 ## normal import 
@@ -138,6 +137,9 @@ class DialogueFlow(UserControl):
         self.send_bttn.horizontal_alignment=flet.CrossAxisAlignment.END
         self.send_stat=Column()
 
+        self.is_use_safety=flet.Switch(label="Safety Mode On",
+                                     value=False)
+
         return Column(
             # width=400,
             controls=[
@@ -149,6 +151,7 @@ class DialogueFlow(UserControl):
                         self.send_stat,
                         ]),
                         ]),
+                self.is_use_safety,
                 self.error_dialog,
             ]
         )
@@ -169,6 +172,8 @@ class DialogueFlow(UserControl):
 
         url="http://localhost:8000/"
         url+=f"dialogue/context_{sended_utterance}"
+        x=1 if self.is_use_safety.value else 0
+        url+=f"withSafety_{x}"
         t=Thread(target=self.wait,args=(1,))
         self.waiting=1
         # t.start()
@@ -224,5 +229,3 @@ def main(page: Page):
 if __name__=="__main__":
     flet.app(target=main)
     print("EVERYTHING DONE.")
-
-

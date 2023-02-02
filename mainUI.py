@@ -103,6 +103,7 @@ def main(page:Page):
     page.navigation_bar=navigation_bar
     show_screen=Column(controls=[])
     page.add(show_screen)
+    page.theme_mode=flet.ThemeMode.DARK
     page.update()
 
 
