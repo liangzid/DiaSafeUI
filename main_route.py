@@ -31,21 +31,26 @@ from fastapi import FastAPI
 import time
 import arrow
 
+from services.chat.inference import ChitChatService
+from services.safety.detect import DetectService
+from services.safety.heal import HealService
 
 app=FastAPI()
 
+dialogue_service=ChitChatService(root_dir="../adc/pretrained_dialogue_model/")
+binary_service=DetectService(root_dir="./ckpts/",model_type="binary")
+multi_service=DetectService(root_dir="./ckpts/",model_type="multi")
+heal_service=HealService(root_dir="./ckpts/",)
+
 @app.get("/detection/context_{ct}utterance_{ut}")
 def run_detect(ct:Union[str,None],ut:str):
-    time.sleep(5)
-    res_dict={"Conclusion":{"Safe?":"Safe",
-                            "Type":"Offending User",},
-            "Distribution":{"Offending User":0.13,
-                            "Risk Ignorance":0.15,
-                            "Unauthorized Expertise":0.45,
-                            "Toxicity Agreement":0.24,
-                            "Biased Opinion":0.71,
-                            "Sensitive Topic Continuation":0.002,
-                            },
+    
+    _,b_dist,b_res=binary_service.inference(ct,ut)
+    _,m_dist,m_res=multi_service.inference(ct,ut)
+
+    res_dict={"Conclusion":{"Safe?":b_res,
+                            "Type":m_res,},
+            "Distribution":m_dist,
                 }
     return res_dict
 
@@ -61,19 +66,23 @@ def run_heal(ct:Union[str,None],ut:str):
                 "istod":istod,
                 "newresponse":test_data}
     else:
-        # run chitchat operation
-        test_data="this is the chitchat data."
-        time.sleep(2)
+        resp=heal_service.inference(ct,ut)
         return {"context":ct,
                 "response":ut,
                 "istod":istod,
-                "newresponse":test_data}
+                "newresponse":resp}
 
-@app.get("/dialogue/context_{ct}")
-def run_chitchat(ct:Union[str,None]):
+@app.get("/dialogue/context_{ct}withSafety_{withSafety}")
+def run_chitchat(ct:Union[str,None],withSafety:int):
     # run chitchat operation
-    resp=f"DEBUG: Coming from Server. current time:{arrow.utcnow().format('YMD')}"
-    time.sleep(0.2)
-    return {"context":ct,
-            "response":resp,
-            }
+    
+    resp=dialogue_service.inference(ct)
+    if withSafety==0:
+        return {"context":ct,
+                "response":resp,
+                }
+    else:
+        newresp=resp
+        return {"context":ct,
+                "response":newresp,
+                }
