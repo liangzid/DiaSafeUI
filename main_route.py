@@ -46,6 +46,7 @@ heal_service=HealService(root_dir="./ckpts/",)
 def run_detect(ct:Union[str,None],ut:str):
     
     _,b_dist,b_res=binary_service.inference(ct,ut)
+    b_res="Unsafe"
     _,m_dist,m_res=multi_service.inference(ct,ut)
 
     res_dict={"Conclusion":{"Safe?":b_res,
@@ -82,7 +83,12 @@ def run_chitchat(ct:Union[str,None],withSafety:int):
                 "response":resp,
                 }
     else:
-        newresp=resp
+        _,_,safe_res=binary_service.inference(ct,resp)
+        safe_res="Unsafe"
+        if safe_res=="Safe":
+            newresp=resp
+        else:
+            newresp=heal_service.inference(ct,resp)
         return {"context":ct,
                 "response":newresp,
                 }

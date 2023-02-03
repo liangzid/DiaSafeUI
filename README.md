@@ -1,5 +1,36 @@
 
+
+> An easy-to-use API and demo for dialogue safety detection and healing.
+
 WARNING: This repository is not ready to use until now.
+
+
+Some demos: 
+
+<img
+  src="./imgs/DialoGPT-without-safety.png"
+  title="Dialogue without safety protection"
+  style="display: inline-block; margin: 0 auto; max-width: 300px">
+
+<img
+  src="./imgs/DialoGPT-with-safety.png"
+  title="Dialogue with safety protection"
+  style="display: inline-block; margin: 0 auto; max-width: 300px">
+
+<img
+  src="./imgs/detection.png"
+  title="results show of detection API."
+  style="display: inline-block; margin: 0 auto; max-width: 300px">
+
+<img
+  src="./imgs/healing.png"
+  title="results show of dialgue healing API."
+  style="display: inline-block; margin: 0 auto; max-width: 300px">
+
+<img
+  src="./imgs/corpus_detoxify.png"
+  title="Corpus Detoxify UI."
+  style="display: inline-block; margin: 0 auto; max-width: 300px">
 
 ## Environment
 
@@ -34,6 +65,11 @@ Then, start the front end UI.
 ```sh
 python mainUI.py
 ```
+
+
+## Checkpoints Downloads
+
+Please Waiting...
 
 ## Packaging to APP
 
