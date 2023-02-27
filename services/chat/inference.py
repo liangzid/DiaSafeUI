@@ -48,17 +48,23 @@ class ChitChatService(object):
                  root_dir="../"):
         super(ChitChatService,self).__init__()
 
+        self.only_decoder=False
         ## load tokenizer and the pretrained dialogue model.
-        if load_model=="DialoGPT":
+        if "DialoGPT" in load_model:
             pretrained_path=root_dir+"DialoGPT-medium"
-            self.tokenizer = AutoTokenizer.from_pretrained(pretrained_path)
-            self.model = AutoModelForCausalLM.from_pretrained(pretrained_path)
-        else:
-            pretrained_path=root_dir+"blenderbot_small-90M"
-            self.tokenizer = AutoTokenizer.from_pretrained(pretrained_path)
+            self.tokenizer = AutoTokenizer.from_pretrained(pretrained_path,
+                                    truncation_side="left")
+            self.model = AutoModelForCausalLM.from_pretrained(pretrained_path,
+                                    )
+            self.only_decoder=True
+        elif "blenderbot" in load_model:
+            pretrained_path=root_dir+f"/{load_model}"
+            self.tokenizer = AutoTokenizer.from_pretrained(pretrained_path,
+                                    truncation_side="left")
             self.model=AutoModelForSeq2SeqLM.from_pretrained(pretrained_path)
         self.model.to(device)
         self.msl=msl
+        self.device=device
         print("INFO: Dialogue model load done.")
 
 
@@ -66,10 +72,15 @@ class ChitChatService(object):
         t1=time.time()
         inpids=self.tokenizer.encode(dialogue_context+self.tokenizer.eos_token,
                                      return_tensors="pt")
+        inpids=inpids.to(self.device)
         t2=time.time()
         res=self.model.generate(inpids,max_length=self.msl)
-        resp=self.tokenizer.decode(res[:,inpids.shape[-1]:][0],
-                                   skip_special_tokens=True)
+        if self.only_decoder:
+            resp=self.tokenizer.decode(res[:,inpids.shape[-1]:][0],
+                                    skip_special_tokens=True)
+        else:
+            resp=self.tokenizer.decode(res[0],
+                                    skip_special_tokens=True)
         t3=time.time()
 
         print(f"Total time cost: {t3-t1},\nwhile tokenizer {t2-t1} and generation {t3-t2}. ")

@@ -37,10 +37,15 @@ from services.safety.heal import HealService
 
 app=FastAPI()
 
-dialogue_service=ChitChatService(root_dir="../adc/pretrained_dialogue_model/")
-binary_service=DetectService(root_dir="./ckpts/",model_type="binary")
-multi_service=DetectService(root_dir="./ckpts/",model_type="multi")
-heal_service=HealService(root_dir="./ckpts/",)
+dialogue_service=ChitChatService(root_dir="./ckpts/pretrained_dialogue_model/",
+                                 load_model="blenderbot-1B-distill",
+                                 device="cuda:7")
+binary_service=DetectService(root_dir="./ckpts/",model_type="binary",
+                             device="cuda:7")
+multi_service=DetectService(root_dir="./ckpts/",model_type="multi",
+                            device="cuda:7")
+heal_service=HealService(root_dir="./ckpts/",
+                         device="cuda:7")
 
 @app.get("/detection/context_{ct}utterance_{ut}")
 def run_detect(ct:Union[str,None],ut:str):

@@ -60,6 +60,7 @@ from flet import (
 )
 
 from dialogue import DialogueFlow
+from dialogue_new import DialogueFlow
 from safety_detect_healing import SafetyHealUI
 from corpus_detoxify import CorpusDetoxifyUI
 

@@ -49,6 +49,7 @@ class DetectService(object):
             pretrained_path=root_dir+"multi-roberta-ckpt"
             self.tokenizer = RobertaTokenizer.from_pretrained(pretrained_path)
             self.model = RobertaForSequenceClassification.from_pretrained(pretrained_path)
+        self.device=device
         self.model.to(device)
         self.model.eval()
         self.msl=msl
@@ -69,6 +70,7 @@ class DetectService(object):
                                      max_length=self.msl,
                                      return_tensors="pt",truncation=True)
         t2=time.time()
+        inpids=inpids.to(self.device)
         outputs=self.model(**inpids)
         print(outputs.logits)
         predict_distribution=torch.nn.functional.softmax(outputs.logits,dim=1)

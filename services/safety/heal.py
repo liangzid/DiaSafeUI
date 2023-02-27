@@ -54,6 +54,7 @@ class HealService(object):
             pass
         self.model.resize_token_embeddings(len(self.tokenizer))
         self.model.to(device).eval()
+        self.device=device
         self.srcmsl=srcmsl
         self.dstmsl=dstmsl
         print("INFO: Healing model load done.")
@@ -63,6 +64,7 @@ class HealService(object):
         inpids=self.tokenizer("User: "+context+" System: "+utterance+"</s>",
                                      max_length=self.srcmsl,
                                      return_tensors="pt",truncation=True)
+        inpids=inpids.to(self.device)
         t2=time.time()
         outputs=self.model.generate(inpids.input_ids,
                                     max_length=self.dstmsl,
