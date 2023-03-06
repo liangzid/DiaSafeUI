@@ -37,6 +37,8 @@ Some demos:
 ```
 python=3.8
 ```
+the lowest python version is 3.7.1.
+
 Packages:
 
 ```sh
@@ -48,6 +50,7 @@ pandas==1.5.3
 plotly==5.13.0
 pyinstaller==5.7.0
 uvicorn
+openai
 ```
 
 Install above packages with `pip install XXX`, or just `pip install -r requirements.txt`
