@@ -18,7 +18,7 @@ import openai
 import os
 
 # def queryOneTurn(text):
-#     openai.api_key = "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"
+#     openai.api_key = "-"
 #     #你的OpenAI API Key
 #     # create a completion
 #     completion = openai.Completion.create(model="gpt-3.5-turbo", \
@@ -28,7 +28,7 @@ import os
 #     print(completion.choices[0].message.content)
 
 # def interact():
-#     openai.api_key = "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"
+#     openai.api_key = "-"
 #     #你的OpenAI API Key
 #     # create a completion
 #     while True:
@@ -42,7 +42,7 @@ import os
 #         print(completion.choices[0].message.content)
 
 # def interactMultiTurn():
-#     openai.api_key = "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"
+#     openai.api_key = "-"
 #     #你的OpenAI API Key
 #     # create a completion
 #     message_ls=[]
